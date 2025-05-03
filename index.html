@@ -1,104 +1,60 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Reference File Download</title>
+  <title>Reference File Lookup</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 50px;
+      padding-top: 50px;
     }
-
-    img {
-      width: 150px;
-      margin-bottom: 30px;
+    #result {
+      margin-top: 20px;
     }
-
-    input {
-      padding: 10px;
-      width: 250px;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 10px;
-      cursor: pointer;
-    }
-
-    #modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    #modal-content {
-      background: white;
+    .success, .error {
       padding: 20px;
-      border-radius: 8px;
-      max-width: 400px;
-      text-align: center;
+      border-radius: 10px;
+      display: inline-block;
+      margin-top: 20px;
     }
-
-    #close {
-      margin-top: 15px;
-      cursor: pointer;
-      color: blue;
-    }
+    .success { background-color: #d4edda; color: #155724; }
+    .error { background-color: #f8d7da; color: #721c24; }
   </style>
 </head>
 <body>
-
-  <!-- Company Logo -->
-  <img src="logo.png" alt="Company Logo">
-
-  <!-- Reference Number Input -->
-  <div>
-    <input type="text" id="refInput" placeholder="Enter reference number">
-    <button onclick="checkReference()">Submit</button>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal">
-    <div id="modal-content">
-      <p id="modal-message"></p>
-      <div id="download-link" style="margin-top: 10px;"></div>
-      <div id="close" onclick="closeModal()">Close</div>
-    </div>
-  </div>
+  <img src="logo.png" alt="Company Logo" style="max-width: 200px;">
+  <h1>Enter Your Reference Number</h1>
+  <input type="text" id="refInput" placeholder="Enter reference number">
+  <button onclick="checkReference()">Submit</button>
+  <div id="result"></div>
 
   <script>
-    const validReferences = {
-      "12345": "files/file1.pdf",
-      "67890": "files/file2.pdf"
-    };
-
     function checkReference() {
-      const ref = document.getElementById('refInput').value.trim();
-      const message = document.getElementById('modal-message');
-      const linkDiv = document.getElementById('download-link');
+      const ref = document.getElementById("refInput").value.trim();
+      const result = document.getElementById("result");
+      result.innerHTML = "";
 
-      if (validReferences[ref]) {
-        message.textContent = "Reference found. You can download your file below:";
-        linkDiv.innerHTML = `<a href="${validReferences[ref]}" download>Download File</a>`;
-      } else {
-        message.textContent = "Invalid reference number. Please try again.";
-        linkDiv.innerHTML = '';
+      if (!/^\d+$/.test(ref)) {
+        result.innerHTML = '<div class="error">Invalid input. Only numbers allowed.</div>';
+        return;
       }
 
-      document.getElementById('modal').style.display = 'flex';
-    }
+      const filePath = `files/${ref}.pdf`;
 
-    function closeModal() {
-      document.getElementById('modal').style.display = 'none';
+      fetch(filePath, { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            result.innerHTML = `<div class="success">Reference found. <a href="${filePath}" download>Click here to download</a>.</div>`;
+          } else {
+            result.innerHTML = '<div class="error">Reference number not found.</div>';
+          }
+        })
+        .catch(error => {
+          result.innerHTML = '<div class="error">Error checking the file. Please try again later.</div>';
+        });
     }
   </script>
-
 </body>
 </html>
